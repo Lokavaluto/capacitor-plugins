@@ -18,6 +18,7 @@ import android.os.Environment;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.util.Base64;
+import android.util.Log;
 import androidx.activity.result.ActivityResult;
 import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
@@ -214,17 +215,23 @@ public class CameraPlugin extends Plugin {
     }
 
     private boolean checkPhotosPermissions(PluginCall call) {
+        Log.w("CameraPlugin", "checkPhotosPermissions");
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            Log.w("CameraPlugin", "1");
+
+
             if (getPermissionState(PHOTOS) != PermissionState.GRANTED) {
                 requestPermissionForAlias(PHOTOS, call, "cameraPermissionsCallback");
                 return false;
             }
         } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            Log.w("CameraPlugin", "2");
             if (getPermissionState(READ_EXTERNAL_STORAGE) != PermissionState.GRANTED) {
                 requestPermissionForAlias(READ_EXTERNAL_STORAGE, call, "cameraPermissionsCallback");
                 return false;
             }
         } else if (getPermissionState(MEDIA) != PermissionState.GRANTED) {
+            Log.w("CameraPlugin", "3");
             requestPermissionForAlias(MEDIA, call, "cameraPermissionsCallback");
             return false;
         }
@@ -267,14 +274,17 @@ public class CameraPlugin extends Plugin {
 
     @Override
     protected void requestPermissionForAliases(@NonNull String[] aliases, @NonNull PluginCall call, @NonNull String callbackName) {
+        Log.w("Monujo", "requestPermissionForAliases: " + aliases);
         // If the SDK version is 33 or higher, use the MEDIA alias permissions instead.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Log.w("Monujo", "requestPermissionForAliases: " + MEDIA);
             for (int i = 0; i < aliases.length; i++) {
                 if (aliases[i].equals(PHOTOS)) {
                     aliases[i] = MEDIA;
                 }
             }
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Log.w("Monujo", "requestPermissionForAliases: " + READ_EXTERNAL_STORAGE);
             for (int i = 0; i < aliases.length; i++) {
                 if (aliases[i].equals(PHOTOS)) {
                     aliases[i] = READ_EXTERNAL_STORAGE;
@@ -807,10 +817,13 @@ public class CameraPlugin extends Plugin {
         // If the camera permission is defined in the manifest, then we have to prompt the user
         // or else we will get a security exception when trying to present the camera. If, however,
         // it is not defined in the manifest then we don't need to prompt and it will just work.
+        Log.w("CameraPlugin", "requestPermissions");
         if (isPermissionDeclared(CAMERA)) {
+            Log.w("CameraPlugin", "requestPermissions: CAMERA");
             // just request normally
             super.requestPermissions(call);
         } else {
+
             // the manifest does not define camera permissions, so we need to decide what to do
             // first, extract the permissions being requested
             JSArray providedPerms = call.getArray("permissions");
@@ -820,6 +833,7 @@ public class CameraPlugin extends Plugin {
                     permsList = providedPerms.toList();
                 } catch (JSONException e) {}
             }
+            Log.w("CameraPlugin", "requestPermissions: " + permsList);
 
             if (permsList != null && permsList.size() == 1 && permsList.contains(CAMERA)) {
                 // the only thing being asked for was the camera so we can just return the current state
