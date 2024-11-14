@@ -196,6 +196,7 @@ public class CameraPlugin extends Plugin {
 
         // If we want to save to the gallery, we need two permissions
         if (settings.isSaveToGallery() && !(hasCameraPerms && hasPhotoPerms) && isFirstRequest) {
+            Log.w("CameraPlugin", "Checking camera permissions for saveToGallery");
             isFirstRequest = false;
             String[] aliases;
             if (needCameraPerms) {
@@ -217,15 +218,14 @@ public class CameraPlugin extends Plugin {
     private boolean checkPhotosPermissions(PluginCall call) {
         Log.w("CameraPlugin", "checkPhotosPermissions");
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-            Log.w("CameraPlugin", "1");
-
+            Log.w("CameraPlugin", "Checking photos permissions for SDK < R");
 
             if (getPermissionState(PHOTOS) != PermissionState.GRANTED) {
                 requestPermissionForAlias(PHOTOS, call, "cameraPermissionsCallback");
                 return false;
             }
         } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            Log.w("CameraPlugin", "2");
+            Log.w("CameraPlugin", "Checking photos permissions for SDK < TIRAMISU");
             if (getPermissionState(READ_EXTERNAL_STORAGE) != PermissionState.GRANTED) {
                 requestPermissionForAlias(READ_EXTERNAL_STORAGE, call, "cameraPermissionsCallback");
                 return false;
@@ -274,17 +274,21 @@ public class CameraPlugin extends Plugin {
 
     @Override
     protected void requestPermissionForAliases(@NonNull String[] aliases, @NonNull PluginCall call, @NonNull String callbackName) {
-        Log.w("Monujo", "requestPermissionForAliases: " + aliases);
+
+
+        Log.w("CameraPlugin", "requestPermissionForAliases: " + String.join(", ", aliases));
+        Log.d("CameraPlugin", "Call stack:\n" + Log.getStackTraceString(new Throwable()));
+
         // If the SDK version is 33 or higher, use the MEDIA alias permissions instead.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            Log.w("Monujo", "requestPermissionForAliases: " + MEDIA);
+            Log.w("CameraPlugin", "requestPermissionForAliases: " + MEDIA);
             for (int i = 0; i < aliases.length; i++) {
                 if (aliases[i].equals(PHOTOS)) {
                     aliases[i] = MEDIA;
                 }
             }
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            Log.w("Monujo", "requestPermissionForAliases: " + READ_EXTERNAL_STORAGE);
+            Log.w("CameraPlugin", "requestPermissionForAliases: " + READ_EXTERNAL_STORAGE);
             for (int i = 0; i < aliases.length; i++) {
                 if (aliases[i].equals(PHOTOS)) {
                     aliases[i] = READ_EXTERNAL_STORAGE;
